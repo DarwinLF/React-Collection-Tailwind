@@ -12,7 +12,7 @@ const Layout = () => {
     return (
         <>
           <Navbar 
-            className="sticky top-0 z-10 mx-auto max-w-screen-xl bg-zinc-900 px-4 py-3"
+            className="sticky top-0 z-10 mx-auto w-screen h-1/5 bg-zinc-900 px-4 py-3"
           >
             <div className="flex flex-wrap items-center justify-start gap-y-4 text-white ml-7">
               <Typography
@@ -26,7 +26,7 @@ const Layout = () => {
               <Menu as="div" className="relative inline-block text-left">
                 <div>
                   <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-zinc-900 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300">
-                    Options
+                    Applications
                     <ChevronDownIcon className="-mr-1 h-5 w-5 text-gray-400" aria-hidden="true" />
                   </Menu.Button>
                 </div>
@@ -52,6 +52,19 @@ const Layout = () => {
                             )}
                           >
                             Color Flipper
+                          </a>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <a
+                            href="/calculator"
+                            className={classNames(
+                              active ? 'bg-zinc-900 text-gray-500' : 'text-gray-300',
+                              'block px-4 py-2 text-sm'
+                            )}
+                          >
+                            Calculator
                           </a>
                         )}
                       </Menu.Item>

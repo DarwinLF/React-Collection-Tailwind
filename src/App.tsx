@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from "./components/layout";
 import Home from "./components/home";
 import ColorFlipper from './components/colorFlipper';
+import Calculator from './components/calculator';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
           <Route path="/" element={<Layout/>}>
             <Route index path='/' element={<Home/>}/>
             <Route path='/colorflipper' element={<ColorFlipper/>}/>
+            <Route path='/calculator' element={<Calculator/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
