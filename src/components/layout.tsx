@@ -10,9 +10,9 @@ function classNames(...classes: string[]) {
 
 const Layout = () => {
     return (
-        <>
+        <div className="min-h-screen flex flex-col">
           <Navbar 
-            className="sticky top-0 z-10 mx-auto w-screen h-1/5 bg-zinc-900 px-4 py-3"
+            className="sticky top-0 z-10 mx-auto w-screen bg-zinc-900 px-4 py-2"
           >
             <div className="flex flex-wrap items-center justify-start gap-y-4 text-white ml-7">
               <Typography
@@ -76,7 +76,8 @@ const Layout = () => {
           </Navbar>
 
           <Outlet />
-        </>
+          <div className="relative flex flex-grow bg-zinc-700"></div>
+        </div>
     )
 }
 
