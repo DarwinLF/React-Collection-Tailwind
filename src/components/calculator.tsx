@@ -7,96 +7,46 @@ const Calculator = () => {
 
     function addSymbol(symbol: string) {
         switch(symbol) {
-            case "0": {
-                addDigit("0");
+            case "0": 
+            case "1": 
+            case "2": 
+            case "3": 
+            case "4": 
+            case "5": 
+            case "6": 
+            case "7": 
+            case "8": 
+            case "9":
+                addDigit(symbol);
                 break;
-            }
-            case "1": {
-                addDigit("1");
-                break;
-            }
-            case "2": {
-                addDigit("2");
-                break;
-            }
-            case "3": {
-                addDigit("3");
-                break;
-            }
-            case "4": {
-                addDigit("4");
-                break;
-            }
-            case "5": {
-                addDigit("5");
-                break;
-            }
-            case "6": {
-                addDigit("6");
-                break;
-            }
-            case "7": {
-                addDigit("7");
-                break;
-            }
-            case "8": {
-                addDigit("8");
-                break;
-            }
-            case "9": {
-                addDigit("9");
-                break;
-            }
-            case "+": {
-                if(operators.length === 1) {
-                    setOperators(["+"]);
-                }else {
-                    setOperators(oldOperators => [...oldOperators, "+"]);
+            case "+":
+            case "-":
+            case "x":
+            case "/":
+                if(operators[0] === "") {
+                    setOperators([symbol]);
+                } else {
+                    setOperators(oldOperators => [...oldOperators, symbol]);
                 }
                 setValues(oldvalues => [...oldvalues, " "])
                 break;
-            }
-            case "-": {
-                if(operators.length === 1) {
-                    setOperators(["-"]);
-                }else {
-                    setOperators(oldOperators => [...oldOperators, "-"]);
-                }
-                setValues(oldvalues => [...oldvalues, " "])
-                break;
-            }
-            case "x": {
-                if(operators.length === 1) {
-                    setOperators(["x"]);
-                }else {
-                    setOperators(oldOperators => [...oldOperators, "x"]);
-                }
-                setValues(oldvalues => [...oldvalues, " "])
-                break;
-            }
-            case "/": {
-                if(operators.length === 1) {
-                    setOperators(["/"]);
-                }else {
-                    setOperators(oldOperators => [...oldOperators, "/"]);
-                }
-                setValues(oldvalues => [...oldvalues, " "])
-                break;
-            }
-            case "=": {
+            case "=":
                 let leftValue = values["0"];
                 for(let i = 1; i < values.length; i++) {
                     leftValue = operate(parseFloat(leftValue), operators[i-1], parseFloat(values[i]))
                 }
                 setValues([leftValue]);
                 setOperators([""]);
+
                 break;
-            }
         }
     }
 
     function addDigit(digit: string) {
-        if(values[values.length - 1] === "0" || values[values.length - 1] === " ") {
+        if(values.length === 1) {
+            setValues([digit]);
+        }
+        else if(values[values.length - 1] === "0" || values[values.length - 1] === " ") {
             setValues([...values.slice(0, values.length - 1), digit])
         }
         else {
