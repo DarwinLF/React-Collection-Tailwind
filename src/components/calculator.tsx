@@ -1,9 +1,11 @@
 import { Button } from "@material-tailwind/react"
-import { useState } from "react";
+import { stat } from "fs";
+import { useEffect, useState } from "react";
 
 const Calculator = () => {
     const [values, setValues] = useState(["0"]);
     const [operators, setOperators] = useState([""]);
+    const [isResult, setIsResult] = useState(true);
 
     function addSymbol(symbol: string) {
         switch(symbol) {
@@ -25,26 +27,52 @@ const Calculator = () => {
             case "/":
                 if(operators[0] === "") {
                     setOperators([symbol]);
-                } else {
+                } 
+                else {
                     setOperators(oldOperators => [...oldOperators, symbol]);
                 }
                 setValues(oldvalues => [...oldvalues, " "])
+                setIsResult(false);
+                break;
+            case ".":
+                if(values[values.length - 1].includes(".")) {
+                    break;
+                }
+
+                if(values[values.length - 1] === " ") {
+                    setValues([...values.slice(0, values.length - 1), "0."])
+                }
+                else {
+                    setValues([...values.slice(0, values.length - 1), values[values.length - 1] + symbol])
+                }
                 break;
             case "=":
-                let leftValue = values["0"];
+                //se tiene que usar variables temporales ya que el useState opera de manera asyncrona
+                let tempValues = values;
+                let tempOperators = operators;
+                for(let i = 0; i < tempOperators.length; i++) {
+                    if(tempOperators[i] === "x" || tempOperators[i] === "/") {
+                        const result = operate(parseFloat(tempValues[i]), tempOperators[i], parseFloat(tempValues[i+1]))
+                        tempValues.splice(i, 2, result);
+                        tempOperators.splice(i, 1);
+                    }
+                }
+
+                let leftValue = tempValues[0];
                 for(let i = 1; i < values.length; i++) {
-                    leftValue = operate(parseFloat(leftValue), operators[i-1], parseFloat(values[i]))
+                    leftValue = operate(parseFloat(leftValue), tempOperators[i-1], parseFloat(tempValues[i]))
                 }
                 setValues([leftValue]);
                 setOperators([""]);
-
+                setIsResult(true);
                 break;
         }
     }
 
     function addDigit(digit: string) {
-        if(values.length === 1) {
+        if(isResult) {
             setValues([digit]);
+            setIsResult(false);
         }
         else if(values[values.length - 1] === "0" || values[values.length - 1] === " ") {
             setValues([...values.slice(0, values.length - 1), digit])
@@ -97,7 +125,7 @@ const Calculator = () => {
                 })}
             </p>
 
-            <Button className="border-2 border-white py-1 w-4/5 justify-self-center" onClick={clean}>C</Button>
+            <Button onClick={clean} className="border-2 border-white py-1 w-4/5 justify-self-center">C</Button>
             <Button className="border-2 border-white py-1 w-4/5 justify-self-center">()</Button>
             <Button className="border-2 border-white py-1 w-4/5 justify-self-center">%</Button>
             <Button onClick={() => addSymbol("/")} className="border-2 border-white py-1 w-4/5 justify-self-center">/</Button>
@@ -118,7 +146,7 @@ const Calculator = () => {
             <Button onClick={() => addSymbol("+")} className="border-2 border-white py-1 w-4/5 justify-self-center">+</Button>
 
             <Button onClick={() => addSymbol("0")} className="col-span-2 border-2 border-white py-1 w-4/5 justify-self-center">0</Button>
-            <Button className="border-2 border-white py-1 w-4/5 justify-self-center">.</Button>
+            <Button onClick={() => addSymbol(".")} className="border-2 border-white py-1 w-4/5 justify-self-center">.</Button>
             <Button onClick={() => addSymbol("=")} className="border-2 border-white py-1 w-4/5 justify-self-center">=</Button>
         </div>
     );
