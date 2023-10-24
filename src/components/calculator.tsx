@@ -1,11 +1,10 @@
 import { Button } from "@material-tailwind/react"
-import { stat } from "fs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const Calculator = () => {
-    const [values, setValues] = useState(["0"]);
-    const [operators, setOperators] = useState([""]);
-    const [isResult, setIsResult] = useState(true);
+    const [expressionPart, setExpressionPart] = useState(["0"]);
+    const [isResult, setIsResult] = useState(false);
+    const [openedParentesis, setOpenedParentesis] = useState(false);
 
     function addSymbol(symbol: string) {
         switch(symbol) {
@@ -25,60 +24,75 @@ const Calculator = () => {
             case "-":
             case "x":
             case "/":
-                if(operators[0] === "") {
-                    setOperators([symbol]);
-                } 
-                else {
-                    setOperators(oldOperators => [...oldOperators, symbol]);
-                }
-                setValues(oldvalues => [...oldvalues, " "])
+                addOperator(symbol);
                 setIsResult(false);
                 break;
             case ".":
-                if(values[values.length - 1].includes(".")) {
-                    break;
-                }
-
-                if(values[values.length - 1] === " ") {
-                    setValues([...values.slice(0, values.length - 1), "0."])
+                addPoint();
+                break;
+            case "()":
+                if(openedParentesis) {
+                    setExpressionPart([...expressionPart, ")"])
+                    setOpenedParentesis(false);
                 }
                 else {
-                    setValues([...values.slice(0, values.length - 1), values[values.length - 1] + symbol])
+                    if(expressionPart.length === 1 && expressionPart[0] === "0") {
+                        setExpressionPart(["("]);
+                    }
+                    else {
+                        setExpressionPart([...expressionPart, "("]);
+                    }
+                    setOpenedParentesis(true);
                 }
                 break;
             case "=":
-                //se tiene que usar variables temporales ya que el useState opera de manera asyncrona
-                let tempValues = values;
-                let tempOperators = operators;
-                for(let i = 0; i < tempOperators.length; i++) {
-                    if(tempOperators[i] === "x" || tempOperators[i] === "/") {
-                        const result = operate(parseFloat(tempValues[i]), tempOperators[i], parseFloat(tempValues[i+1]))
-                        tempValues.splice(i, 2, result);
-                        tempOperators.splice(i, 1);
-                    }
-                }
-
-                let leftValue = tempValues[0];
-                for(let i = 1; i < values.length; i++) {
-                    leftValue = operate(parseFloat(leftValue), tempOperators[i-1], parseFloat(tempValues[i]))
-                }
-                setValues([leftValue]);
-                setOperators([""]);
+                setExpressionPart(calculate(expressionPart, 0));
                 setIsResult(true);
                 break;
         }
     }
 
     function addDigit(digit: string) {
-        if(isResult) {
-            setValues([digit]);
+        const lastPart = expressionPart[expressionPart.length - 1];
+
+        if(isResult || lastPart === "0") {
+            setExpressionPart([digit]);
             setIsResult(false);
         }
-        else if(values[values.length - 1] === "0" || values[values.length - 1] === " ") {
-            setValues([...values.slice(0, values.length - 1), digit])
+        else if(lastPart !== "+" && lastPart !== "-" && lastPart !== "x" && lastPart !== "/" && lastPart !== "(") {
+            setExpressionPart([...expressionPart.slice(0, expressionPart.length - 1), lastPart + digit]);
         }
         else {
-            setValues([...values.slice(0, values.length - 1), values[values.length - 1] + digit])
+            setExpressionPart([...expressionPart, digit]);
+        }
+    }
+
+    function addOperator(operator: string) {
+        const lastPart = expressionPart[expressionPart.length - 1];
+
+        if(lastPart === "+" || lastPart === "-" || lastPart === "x" || lastPart === "/") {
+            return;
+        }
+
+        setExpressionPart([...expressionPart, operator]);
+        setOpenedParentesis(false);
+
+    }
+
+    function addPoint() {
+        const lastPart = expressionPart[expressionPart.length - 1];
+
+        if(lastPart.includes(".")) {
+            return;
+        }
+
+        const regex = /(\+|-|x|\/)/g;
+
+        if(lastPart.match(regex)){
+            setExpressionPart([...expressionPart, "0."]);
+        }
+        else {
+            setExpressionPart([...expressionPart.slice(0, expressionPart.length - 1), lastPart + "."]);
         }
     }
 
@@ -102,31 +116,53 @@ const Calculator = () => {
         }
     }
 
+    function calculate(tempExpressionPart: string[], i: number) {
+        for(let j = i; j < tempExpressionPart.length; j++) {
+            if(tempExpressionPart[j].match(/(x|\/)/g)) {
+                if(tempExpressionPart[j + 1] === "(") {
+                    tempExpressionPart = calculate(tempExpressionPart, j + 1);
+                }
+                const result = operate(parseFloat(tempExpressionPart[j - 1]), 
+                                        tempExpressionPart[j], 
+                                        parseFloat(tempExpressionPart[j + 1]));
+                tempExpressionPart.splice(j - 1, 3, result);
+            }
+        }
+
+        if(tempExpressionPart[i] === "(") {
+            tempExpressionPart.splice(i, 1);
+        }
+
+        while(tempExpressionPart[i] !== ")" && i < tempExpressionPart.length - 1) {
+            const result = operate(parseFloat(tempExpressionPart[i]), 
+                                    tempExpressionPart[i + 1], 
+                                    parseFloat(tempExpressionPart[i + 2]));
+            tempExpressionPart.splice(i, 3, result);
+            i++;
+        }
+
+        if(tempExpressionPart[i] === ")") {
+            tempExpressionPart.splice(i, 1);
+        }
+
+        return tempExpressionPart;
+    }
+
     function clean() {
-        setValues(["0"]);
-        setOperators([""]);
+        setExpressionPart(["0"]);
+        setOpenedParentesis(false);
     }
 
     return (
         <div className="grid grid-cols-4 justify-center items-center h-96 gap-x-2 gap-y-px bg-zinc-700">
             <p className="col-span-4 text-2xl text-gray-900 dark:text-white border-2 border-white justify-self-end w-1/4 text-right mr-16">
-                {values.map((value, index) => {
-                        let expressionPart;
-
-                        if(operators[index]) {
-                            //expressionPart = " " + operators[index] + " " + value;
-                            expressionPart = value + " " + operators[index] + " ";
-                        }
-                        else {
-                            expressionPart = value
-                        }
-
-                        return expressionPart;
+                {expressionPart.map((value) => {
+                    return value;
                 })}
             </p>
 
             <Button onClick={clean} className="border-2 border-white py-1 w-4/5 justify-self-center">C</Button>
-            <Button className="border-2 border-white py-1 w-4/5 justify-self-center">()</Button>
+            <Button onClick={() => addSymbol("()")} className="border-2 border-white py-1 w-4/5 justify-self-center">()</Button>
             <Button className="border-2 border-white py-1 w-4/5 justify-self-center">%</Button>
             <Button onClick={() => addSymbol("/")} className="border-2 border-white py-1 w-4/5 justify-self-center">/</Button>
 
