@@ -4,7 +4,7 @@ import { useState } from "react";
 const Calculator = () => {
     const [expressionPart, setExpressionPart] = useState(["0"]);
     const [isResult, setIsResult] = useState(false);
-    const [openedParentesis, setOpenedParentesis] = useState(false);
+    const [openedParentesis, setOpenedParentesis] = useState(0);
 
     function addSymbol(symbol: string) {
         switch(symbol) {
@@ -31,24 +31,37 @@ const Calculator = () => {
                 addPoint();
                 break;
             case "()":
-                if(openedParentesis) {
-                    setExpressionPart([...expressionPart, ")"])
-                    setOpenedParentesis(false);
-                }
-                else {
+                const lastPart = expressionPart[expressionPart.length - 1];
+
+                if(openedParentesis === 0 || isOperator(lastPart)) {
                     if(expressionPart.length === 1 && expressionPart[0] === "0") {
                         setExpressionPart(["("]);
                     }
                     else {
-                        setExpressionPart([...expressionPart, "("]);
+                        setExpressionPart([...expressionPart, "("])
                     }
-                    setOpenedParentesis(true);
+                    
+                    setOpenedParentesis(openedParentesis + 1);
+                }
+                else if(openedParentesis > 0) {
+                    setExpressionPart([...expressionPart, ")"])
+                    setOpenedParentesis(openedParentesis - 1);
                 }
                 break;
             case "=":
                 setExpressionPart(calculate(expressionPart, 0));
+                setOpenedParentesis(0);
                 setIsResult(true);
                 break;
+        }
+    }
+
+    function isOperator(symbol: string) {
+        if(symbol === "+" || symbol === "-" || symbol === "x" || symbol === "/") {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -59,7 +72,7 @@ const Calculator = () => {
             setExpressionPart([digit]);
             setIsResult(false);
         }
-        else if(lastPart !== "+" && lastPart !== "-" && lastPart !== "x" && lastPart !== "/" && lastPart !== "(") {
+        else if(!isOperator(lastPart) && lastPart !== "(") {
             setExpressionPart([...expressionPart.slice(0, expressionPart.length - 1), lastPart + digit]);
         }
         else {
@@ -70,12 +83,11 @@ const Calculator = () => {
     function addOperator(operator: string) {
         const lastPart = expressionPart[expressionPart.length - 1];
 
-        if(lastPart === "+" || lastPart === "-" || lastPart === "x" || lastPart === "/") {
+        if(isOperator(lastPart)) {
             return;
         }
 
         setExpressionPart([...expressionPart, operator]);
-        setOpenedParentesis(false);
 
     }
 
@@ -150,7 +162,7 @@ const Calculator = () => {
 
     function clean() {
         setExpressionPart(["0"]);
-        setOpenedParentesis(false);
+        setOpenedParentesis(0);
     }
 
     return (
