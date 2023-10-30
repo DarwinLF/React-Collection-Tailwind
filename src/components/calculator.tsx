@@ -7,6 +7,8 @@ const Calculator = () => {
     const [openedParentesis, setOpenedParentesis] = useState(0);
 
     function addSymbol(symbol: string) {
+        let lastPart = expressionPart[expressionPart.length - 1];
+
         switch(symbol) {
             case "0": 
             case "1": 
@@ -31,8 +33,6 @@ const Calculator = () => {
                 addPoint();
                 break;
             case "()":
-                const lastPart = expressionPart[expressionPart.length - 1];
-
                 if(openedParentesis === 0 || isOperator(lastPart)) {
                     if(expressionPart.length === 1 && expressionPart[0] === "0") {
                         setExpressionPart(["("]);
@@ -48,7 +48,14 @@ const Calculator = () => {
                     setOpenedParentesis(openedParentesis - 1);
                 }
                 break;
+            case "%":
+                if(parseFloat(lastPart)) {
+                    setExpressionPart([...expressionPart, "%"]);
+                }
+
+                break;
             case "=":
+                setExpressionPart(convertPercentage(expressionPart));
                 setExpressionPart(calculate(expressionPart, 0));
                 setOpenedParentesis(0);
                 setIsResult(true);
@@ -129,6 +136,7 @@ const Calculator = () => {
     }
 
     function calculate(tempExpressionPart: string[], i: number) {
+        //realizar las operaciones de multiplicacion y division, ademas si hay un parentesis volver a llamar la funcion
         for(let j = i; j < tempExpressionPart.length; j++) {
             if(tempExpressionPart[j].match(/(x|\/)/g)) {
                 if(tempExpressionPart[j + 1] === "(") {
@@ -145,6 +153,7 @@ const Calculator = () => {
             tempExpressionPart.splice(i, 1);
         }
 
+        //relizar las operaciones de suma y resta
         while(tempExpressionPart[i] !== ")" && i < tempExpressionPart.length - 1) {
             const result = operate(parseFloat(tempExpressionPart[i]), 
                                     tempExpressionPart[i + 1], 
@@ -156,6 +165,17 @@ const Calculator = () => {
         if(tempExpressionPart[i] === ")") {
             tempExpressionPart.splice(i, 1);
         }
+
+        return tempExpressionPart;
+    }
+
+    function convertPercentage(tempExpressionPart: string[]) {
+        tempExpressionPart.forEach((element, index) => {
+            if(element === "%") {
+                tempExpressionPart[index - 1] = (parseFloat(tempExpressionPart[index - 1]) / 100).toString();
+                tempExpressionPart.splice(index, 1);
+            }
+        });
 
         return tempExpressionPart;
     }
@@ -175,7 +195,7 @@ const Calculator = () => {
 
             <Button onClick={clean} className="border-2 border-white py-1 w-4/5 justify-self-center">C</Button>
             <Button onClick={() => addSymbol("()")} className="border-2 border-white py-1 w-4/5 justify-self-center">()</Button>
-            <Button className="border-2 border-white py-1 w-4/5 justify-self-center">%</Button>
+            <Button onClick={() => addSymbol("%")} className="border-2 border-white py-1 w-4/5 justify-self-center">%</Button>
             <Button onClick={() => addSymbol("/")} className="border-2 border-white py-1 w-4/5 justify-self-center">/</Button>
 
             <Button onClick={() => addSymbol("7")} className="border-2 border-white py-1 w-4/5 justify-self-center">7</Button>
