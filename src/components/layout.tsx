@@ -68,6 +68,19 @@ const Layout = () => {
                           </a>
                         )}
                       </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <a
+                            href="/rps"
+                            className={classNames(
+                              active ? 'bg-zinc-900 text-gray-500' : 'text-gray-300',
+                              'block px-4 py-2 text-sm'
+                            )}
+                          >
+                            Rock Paper Scissors
+                          </a>
+                        )}
+                      </Menu.Item>
                     </div>
                   </Menu.Items>
                 </Transition>

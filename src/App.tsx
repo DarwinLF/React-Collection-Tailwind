@@ -4,6 +4,7 @@ import Layout from "./components/layout";
 import Home from "./components/home";
 import ColorFlipper from './components/colorFlipper';
 import Calculator from './components/calculator';
+import RockPaperScissors  from './components/rps';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
             <Route index path='/' element={<Home/>}/>
             <Route path='/colorflipper' element={<ColorFlipper/>}/>
             <Route path='/calculator' element={<Calculator/>}/>
+            <Route path='/rps' element={<RockPaperScissors/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
